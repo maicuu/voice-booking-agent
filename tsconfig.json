@@ -1,0 +1,36 @@
+{
+  // O Node 22 executa TypeScript apagando os tipos em tempo de carga, sem
+  // transpilar (ADR 0004). Duas consequencias moldam este arquivo:
+  //
+  //   erasableSyntaxOnly  recusa a sintaxe que o Node nao consegue apagar
+  //                       (enum, namespace, parametro-propriedade). Sem isso o
+  //                       erro so apareceria na execucao, e como "SyntaxError"
+  //                       em vez de "essa construcao nao e suportada".
+  //   allowImportingTsExtensions  os imports carregam a extensao .ts de verdade,
+  //                       porque e o arquivo que o Node abre. Nao ha build que
+  //                       reescreva o caminho depois.
+  //
+  // O tsc nunca emite nada: ele existe aqui so como verificador.
+  "compilerOptions": {
+    "target": "es2023",
+    "lib": ["es2023"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+
+    "noEmit": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}

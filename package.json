@@ -1,0 +1,19 @@
+{
+  "name": "recepcionista",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Agente de voz que agenda contra a API do AgendaFacil",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "tipos": "tsc --noEmit",
+    "teste": "node --test",
+    "verificar": "npm run tipos && npm run teste"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "typescript": "^5.9.2"
+  }
+}
