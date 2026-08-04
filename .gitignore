@@ -1,0 +1,28 @@
+# segredos
+.env
+.env.*
+!.env.example
+
+# rascunho e nota privada — nada aqui vai para o repositório público
+local/
+
+# dependências e build
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+
+# áudio de teste e artefatos de execução
+*.wav
+*.mp3
+*.ogg
+traces/
+*.sqlite
+*.sqlite-journal
+
+# ferramentas e SO
+.DS_Store
+Thumbs.db
+*.log
+.venv/
+__pycache__/
