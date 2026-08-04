@@ -19,7 +19,7 @@
  *
  * Uso:
  *   AGENDA_API_BASE_URL=http://localhost:3000/api \
- *   AGENDA_TENANT=barbeariakoala \
+ *   AGENDA_TENANT=minha-barbearia \
  *   node scripts/verificar-escrita.ts --confirmo
  */
 

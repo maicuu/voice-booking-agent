@@ -15,7 +15,7 @@ import { ehHora, hoje, somarDias } from "../src/agenda/datas.ts";
  * Fica desligado por padrao. Para rodar, suba o AgendaFacil local e exporte:
  *
  *   AGENDA_API_BASE_URL=http://localhost:3000/api
- *   AGENDA_TENANT=barbeariakoala
+ *   AGENDA_TENANT=minha-barbearia
  *
  * So leitura: nenhum caso aqui escreve na agenda de ninguem. O caminho de
  * escrita tem efeito colateral irreversivel numa agenda real e nao pode rodar

@@ -12,7 +12,7 @@
  *
  * Uso:
  *   AGENDA_API_BASE_URL=http://localhost:3000/api \
- *   AGENDA_TENANT=barbeariakoala \
+ *   AGENDA_TENANT=minha-barbearia \
  *   node scripts/medir-ferramentas.ts [amostras]
  *
  * So leitura: nao escreve na agenda de ninguem.
