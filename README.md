@@ -81,4 +81,10 @@ AGENDA_API_BASE_URL=http://localhost:3000/api AGENDA_TENANT=<slug> npm run contr
 AGENDA_API_BASE_URL=http://localhost:3000/api AGENDA_TENANT=<slug> npm run medir
 ```
 
+Existe um terceiro, `scripts/verificar-escrita.ts`, que exercita o caminho de
+escrita e a política de idempotência de ponta a ponta. Ele **cria um evento real na
+agenda de um profissional**, exige a flag `--confirmo` e fica fora da suíte de
+propósito: um caso de teste com efeito colateral irreversível é o erro que este
+projeto existe para mostrar que se sabe evitar.
+
 A conversa digitada é o entregável da Fase 1 e ainda não existe.

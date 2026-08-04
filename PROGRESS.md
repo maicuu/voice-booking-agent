@@ -116,12 +116,34 @@ amostras e sem o resto do orçamento de latência existir.
 1. Refazer a medição com amostragem maior e com os 3 profissionais da outra
    unidade, para saber se o leque continua grátis quando cresce. Só então decidir
    mitigação — e, se ela mudar a fronteira com a API, vira ADR.
-2. **O caminho de escrita nunca foi exercido.** `POST /schedule` criaria um evento
-   real na agenda Google de um profissional, e isso não roda sem decisão explícita.
-   Enquanto não rodar, a ADR 0005 está verificada apenas contra o duplo em memória.
-3. Máquina de estados do turno, ferramentas expostas ao modelo e o laço de tool
+2. Máquina de estados do turno, ferramentas expostas ao modelo e o laço de tool
    calling. É o resto da Fase 1, e precisa da ADR de LLM antes.
-4. CLI de conversa digitada — o entregável declarado da Fase 1.
+3. CLI de conversa digitada — o entregável declarado da Fase 1. O agendamento real
+   já acontece; falta a conversa que o produz.
+
+**A escrita foi exercida contra a API real.** `scripts/verificar-escrita.ts`, com
+autorização explícita e a flag `--confirmo`, criou um agendamento de verdade na
+agenda Google de um profissional do banco de teste. Ele cria **um** evento e prova
+o resto por recusa:
+
+| verificação | resultado |
+|---|---|
+| a API confirmou a primeira escrita | confirmado, não reaproveitado |
+| o horário sumiu de `/slots` | 15 → 14 horários livres |
+| reentrega com a mesma chave | respondeu do registro, sem segunda escrita |
+| outro telefone no mesmo horário | recusado com `slot_ocupado` |
+| escrita extra depois das recusas | nenhuma |
+
+A terceira linha é a que sustenta a ADR 0005: a chave era **outra**, então o
+registro local não barrou nada — quem recusou foi a revalidação do servidor contra
+o Google. É exatamente a camada em que a política de reenvio se apoia, e agora está
+confirmada em vez de suposta. O registro em arquivo também foi exercido, gravando
+em `local/`.
+
+Com isso, "agendamento criado de verdade a partir do agente" deixou de ser
+hipótese. O entregável da Fase 1 pede que ele venha de uma conversa digitada, o que
+ainda não existe — mas a metade difícil, a que tem efeito colateral irreversível,
+está funcionando e verificada.
 
 ## 2026-08-04 — repositório criado
 
