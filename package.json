@@ -12,10 +12,14 @@
     "teste": "node --test",
     "verificar": "npm run tipos && npm run teste",
     "contrato": "node --test tests/contrato.test.ts",
-    "medir": "node scripts/medir-ferramentas.ts"
+    "medir": "node scripts/medir-ferramentas.ts",
+    "conversa": "node --env-file=.env src/cli.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0"
   }
 }
