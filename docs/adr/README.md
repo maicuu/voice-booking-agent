@@ -46,15 +46,19 @@ como substituído. A única edição permitida em um ADR aceito é essa linha de
 | [0003](0003-contrato-com-a-api-do-agendafacil.md) | Contrato com a API do AgendaFácil, consumida como cliente externo | Aceito |
 | [0004](0004-stack-node-typescript-sem-framework.md) | Node.js com TypeScript, sem framework de agente e sem etapa de build | Aceito |
 | [0005](0005-idempotencia-por-registro-local-de-intencao.md) | Idempotência por registro local de intenção | Aceito |
+| [0006](0006-llm-claude-haiku-com-custo-como-criterio.md) | Claude Haiku 4.5, com custo por conversa como critério de primeira ordem | Aceito |
+| [0007](0007-suite-de-avaliacao-em-duas-camadas.md) | Suíte de avaliação em duas camadas — reprodução gravada no CI | Aceito |
+
+A ADR 0006 encerra a propriedade "nenhuma dependência de runtime" que a ADR 0004
+listava como consequência. A 0004 continua valendo no resto; o motivo da troca está
+na seção "Relação com a ADR 0004" da 0006.
 
 ## Decisões pendentes
 
 Ainda sem ADR, precisam de um antes da primeira linha de código da fase
 correspondente:
 
-- **Provedor de LLM e formato do tool calling** — quais ferramentas o modelo
-  enxerga e como a máquina de estados as apresenta — Fase 1.
 - **Provedores de STT e TTS** — depende de teste de qualidade em pt-BR com
   sotaque — Fase 2.
 - **Armazenamento dos traces** — Fase 3. Provavelmente absorve o registro de
-  intenções da ADR 0005.
+  intenções da ADR 0005 e as gravações da ADR 0007.
