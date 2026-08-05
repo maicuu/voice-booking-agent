@@ -19,6 +19,75 @@ volta a ser tentado daqui a três semanas.
 
 ---
 
+## 2026-08-04 — o loop do agente, e o orçamento como restrição de arquitetura
+
+**Feito:** a camada de conversa inteira, em `src/conversa/` — o loop que o
+`plano.md` §3 diz que o projeto existe para mostrar escrito à mão.
+
+- `tipos.ts` — contrato com o modelo, provedor-agnóstico.
+- `ferramentas.ts` — as cinco ferramentas que o modelo enxerga e o despachante.
+- `confirmacao.ts` — a guarda de confirmação em dois passos.
+- `orquestrador.ts` — o laço fala → modelo → ferramentas → modelo.
+- `claude.ts` — adaptador da API da Anthropic.
+- `prompt.ts`, `modelo-roteirizado.ts` — prompt de sistema e duplo para teste.
+- `src/cli.ts` — a conversa digitada, entregável da Fase 1.
+
+ADRs 0006 (modelo e custo) e 0007 (suíte de avaliação em duas camadas).
+
+**O orçamento entrou como restrição de projeto**, não como coisa a medir depois: o
+teto declarado é de aproximadamente R$10 para o projeto inteiro. Isso muda uma
+decisão de arquitetura, e não só a escolha de modelo.
+
+A conta que importa não é a da conversa avulsa — é `casos × custo por conversa ×
+execuções`. O §6.2 do plano pedia 25 a 40 casos de avaliação rodando no CI **a cada
+commit**; algumas centenas de commits multiplicam o custo por conversa por cinco
+mil. O item mais sênior do plano era também o que consumiria o orçamento inteiro.
+Daí a ADR 0007: reprodução gravada a cada commit (custo zero, determinística),
+execução ao vivo sob demanda (produz o número publicado e regrava).
+
+**A guarda de confirmação é o pedaço que vale defender.** O §6.4 pede confirmação
+explícita antes de escrever. Escrita no prompt, isso é uma sugestão que o modelo
+cumpre quase sempre — e pula justamente nas conversas confusas, onde confirmar mais
+importa. Aqui a ferramenta de escrita **não aceita os dados do agendamento**: aceita
+só um comprovante emitido por `preparar_confirmacao`, e só a partir do turno
+seguinte. Um comprovante emitido e resgatado no mesmo turno significa que o agente
+leu a confirmação e respondeu a si mesmo; a guarda recusa. Três dos testes existem
+só para provar que o caminho não é contornável.
+
+**Não funcionou:**
+
+- A primeira versão do prompt de sistema repetia a regra de confirmação em duas
+  frases. Foi removida: dá a impressão de que o prompt é o que sustenta a regra, e
+  prompt não sustenta regra — só a torna mais provável. A regra vive na guarda e nas
+  descrições das ferramentas.
+- Considerado inflar o prompt de sistema até 4096 tokens para ativar o cache de
+  prompt do Haiku 4.5. Descartado: pagaria mais tokens do que economizaria, e
+  pioraria o comportamento do modelo. O prefixo mínimo de cache **não acompanha a
+  ordem de preço** — 4096 tokens no Haiku 4.5 contra 512 nos modelos maiores —, o
+  que torna o modelo mais barato por token o que menos se beneficia de cache.
+- O helper `montar` dos testes nasceu com um tipo condicional ilegível tentando
+  derivar o roteiro da assinatura do modelo. `ConstructorParameters<typeof
+  ModeloRoteirizado>[0]` faz o mesmo em uma linha.
+
+**Medido:** 57 casos de teste, todos passando; `tsc --noEmit` limpo. Preço de tabela
+do Haiku 4.5 nesta data: US$ 1 por milhão de tokens de entrada, US$ 5 de saída.
+
+**Nenhum número de custo por conversa ainda.** O preço por token é fato de tabela; a
+contagem de tokens por conversa não é, e não será até o CLI rodar contra o modelo de
+verdade. O CLI já imprime a contagem real que o provedor devolve, por turno e no
+total — é a matéria-prima da medição, não a medição.
+
+**Aberto:**
+
+1. **Nada rodou contra o modelo de verdade.** Não há `ANTHROPIC_API_KEY` no
+   ambiente, e a chave e o orçamento são do dono do repositório. Até rodar, a camada
+   `claude.ts` está verificada só por tipo — o adaptador nunca traduziu uma resposta
+   real.
+2. Escrever a suíte de avaliação da ADR 0007: os casos, o formato de gravação e o
+   hash de prompt que invalida gravação velha.
+3. Refazer a medição de latência das ferramentas com amostragem maior (pendência da
+   sessão anterior, ainda aberta).
+
 ## 2026-08-04 — camada de ferramentas da Fase 1, e as três ADRs que a destravavam
 
 **Feito:** mapeamento da API do AgendaFácil lendo o código dela, as três decisões

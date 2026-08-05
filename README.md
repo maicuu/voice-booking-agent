@@ -4,9 +4,10 @@ Agente de voz que atende, entende e agenda de verdade — o modelo interpreta a
 intenção, mas quem responde disponibilidade, preço e confirma a escrita é sempre
 uma API real de agendamento.
 
-**Status: Fase 1, em andamento.** A camada de ferramentas — o que fala com a API de
-agendamento — está escrita e testada. Falta a máquina de estados do turno, o laço de
-tool calling e a conversa digitada, que é o entregável da fase. Nada de áudio ainda.
+**Status: Fase 1, em andamento.** O loop está escrito: camada de ferramentas, máquina
+de estados do turno, tool calling e a conversa digitada. Nada de áudio ainda — se a
+lógica não estiver certa em texto, áudio só esconderia o problema. Falta a suíte de
+avaliação, e nada rodou ainda contra o modelo de verdade.
 
 ---
 
@@ -24,6 +25,22 @@ preenche slots; quem responde "tem horário quinta às 15h" é a API. O modelo n
 inventa dado de negócio porque nunca é ele quem tem o dado.
 
 Registrada em [ADR 0001](docs/adr/0001-llm-nao-e-fonte-de-verdade-de-negocio.md).
+
+## A confirmação não está no prompt
+
+O agente repete o que entendeu e espera confirmação explícita antes de criar o
+agendamento. Escrita no prompt, essa regra é uma sugestão: o modelo cumpre na maioria
+das conversas e pula em algumas — e as que ele pula são justamente as confusas, onde
+confirmar mais importa.
+
+Aqui a ferramenta de escrita **não aceita os dados do agendamento**. Ela aceita só um
+comprovante emitido por `preparar_confirmacao`, e só a partir do turno seguinte. Um
+comprovante emitido e resgatado no mesmo turno significa que o agente leu a
+confirmação em voz alta e respondeu a si mesmo; a guarda recusa.
+
+O código está em [`src/conversa/confirmacao.ts`](src/conversa/confirmacao.ts), e
+[três testes](tests/conversa.test.ts) existem só para provar que o caminho não é
+contornável — cada um verifica que a agenda continua com zero eventos.
 
 ## Números
 
@@ -87,4 +104,12 @@ agenda de um profissional**, exige a flag `--confirmo` e fica fora da suíte de
 propósito: um caso de teste com efeito colateral irreversível é o erro que este
 projeto existe para mostrar que se sabe evitar.
 
-A conversa digitada é o entregável da Fase 1 e ainda não existe.
+A conversa digitada precisa do AgendaFácil local **e** de uma chave da Anthropic em
+`.env` (veja [`.env.example`](.env.example)):
+
+```
+npm run conversa
+```
+
+Ela imprime, a cada turno, a latência, a contagem de tokens que o provedor devolveu e
+quais ferramentas foram chamadas.
