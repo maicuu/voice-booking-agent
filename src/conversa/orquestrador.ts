@@ -88,7 +88,19 @@ export class Conversa {
           transcricao: [...this.#transcricao],
         });
       } catch (erro) {
-        return this.#degradar(erro, chamadasDoTurno, uso);
+        // Degrada so em falha do provedor. Qualquer outra excecao e bug do
+        // proprio agente e sobe.
+        //
+        // A versao anterior capturava tudo, e isso escondia exatamente o que
+        // nao pode ser escondido: uma gravacao desatualizada da suite de
+        // avaliacao (ADR 0007) virava "turno degradado" em vez de falha, e um
+        // caso que espera zero agendamentos passaria reproduzindo um dialogo
+        // que o modelo nao produz mais. Degradacao existe para proteger o
+        // cliente de uma falha externa, nao para esconder bug nosso.
+        if (erro instanceof ErroModelo) {
+          return this.#degradar(erro, chamadasDoTurno, uso);
+        }
+        throw erro;
       }
 
       uso.entrada += resposta.uso.entrada;
@@ -130,10 +142,9 @@ export class Conversa {
    * Degradacao definida em vez de queda (`plano.md` §6.5). O cliente ouve uma
    * frase util; o motivo tecnico fica no trace, nunca no audio.
    */
-  #degradar(erro: unknown, chamadas: ChamadaDeFerramenta[], uso: UsoDeTokens): Turno {
-    const codigo = erro instanceof ErroModelo ? erro.codigo : "indisponivel";
+  #degradar(erro: ErroModelo, chamadas: ChamadaDeFerramenta[], uso: UsoDeTokens): Turno {
     const resposta =
-      codigo === "limite_excedido"
+      erro.codigo === "limite_excedido"
         ? "Estamos com muita procura agora. Pode tentar de novo daqui a pouquinho?"
         : "Tive um problema aqui do meu lado. Voce pode repetir?";
     return { resposta, chamadas, uso, degradado: true };

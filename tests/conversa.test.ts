@@ -229,6 +229,30 @@ describe("degradacao em vez de queda", () => {
     ok(!turno.resposta.includes("conexao caiu"), "detalhe tecnico nao vai para o cliente");
   });
 
+  it("erro que NAO e do provedor sobe, em vez de virar degradacao", async () => {
+    // Degradacao protege o cliente de falha externa. Usada para engolir bug
+    // nosso, ela esconde justamente o que precisa aparecer — foi assim que uma
+    // gravacao desatualizada da suite de avaliacao virava "turno degradado".
+    const agenda = new AgendaEmMemoria(estabelecimentoDeTeste(), () => AGORA.getTime());
+    const conversa = new Conversa({
+      modelo: {
+        async responder() {
+          throw new TypeError("bug do agente, nao do provedor");
+        },
+      },
+      cliente: agenda,
+      registro: new RegistroEmMemoria(),
+      slug: "barbearia-teste",
+      nomeDaBarbearia: "Barbearia de Teste",
+      agora: () => AGORA,
+    });
+
+    await conversa.falar("oi").then(
+      () => ok(false, "deveria ter subido"),
+      (erro: unknown) => ok(erro instanceof TypeError),
+    );
+  });
+
   it("limite de requisicoes tem frase propria", async () => {
     const agenda = new AgendaEmMemoria(estabelecimentoDeTeste(), () => AGORA.getTime());
     const conversa = new Conversa({
