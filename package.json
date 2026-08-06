@@ -13,7 +13,8 @@
     "verificar": "npm run tipos && npm run teste",
     "contrato": "node --test tests/contrato.test.ts",
     "medir": "node scripts/medir-ferramentas.ts",
-    "conversa": "node --env-file=.env src/cli.ts"
+    "conversa": "node --env-file=.env src/cli.ts",
+    "avaliar": "node scripts/avaliar.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
