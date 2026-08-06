@@ -4,10 +4,11 @@ Agente de voz que atende, entende e agenda de verdade — o modelo interpreta a
 intenção, mas quem responde disponibilidade, preço e confirma a escrita é sempre
 uma API real de agendamento.
 
-**Status: Fase 1, em andamento.** O loop está escrito: camada de ferramentas, máquina
-de estados do turno, tool calling e a conversa digitada. Nada de áudio ainda — se a
-lógica não estiver certa em texto, áudio só esconderia o problema. Falta a suíte de
-avaliação, e nada rodou ainda contra o modelo de verdade.
+**Status: Fase 1, em andamento.** O loop está escrito — camada de ferramentas, máquina
+de estados do turno, tool calling e conversa digitada — e a suíte de avaliação, com
+doze casos, também. Nada de áudio ainda: se a lógica não estiver certa em texto, áudio
+só esconderia o problema. Nada rodou ainda contra o modelo de verdade, então não há
+taxa de aprovação nem custo medido.
 
 ---
 
@@ -113,3 +114,27 @@ npm run conversa
 
 Ela imprime, a cada turno, a latência, a contagem de tokens que o provedor devolveu e
 quais ferramentas foram chamadas.
+
+## A suíte de avaliação roda de graça
+
+Doze conversas de teste, cada uma declarando qual ferramenta deveria ser chamada, com
+quais argumentos, e quantos agendamentos deveriam existir no fim. Nenhuma afirma o
+texto que o agente produz — texto é a parte que o modelo escreve, e portanto a que
+mais varia.
+
+Chamar o modelo de verdade a cada commit sairia caro e falharia de forma intermitente
+por motivos sem relação com o commit. Então a suíte tem duas camadas
+([ADR 0007](docs/adr/0007-suite-de-avaliacao-em-duas-camadas.md)):
+
+```
+npm run avaliar                # camada 1: reproduz gravações. Sem rede, sem chave, sem custo.
+npm run avaliar -- --ao-vivo   # camada 2: chama o modelo, regrava, e custa dinheiro.
+```
+
+A camada 1 verifica tudo que fica em volta do modelo — máquina de estados, guarda de
+confirmação, idempotência, degradação — e é o que roda no CI. A camada 2 produz a taxa
+de aprovação publicável e regrava os diálogos.
+
+Cada gravação carrega a assinatura do prompt e das ferramentas que a produziram. Mudar
+o prompt sem regravar faz a camada 1 falhar, em vez de deixá-la verde testando um
+diálogo que o modelo não produz mais. Caso sem gravação também é falha, nunca pulo.

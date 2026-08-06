@@ -19,6 +19,57 @@ volta a ser tentado daqui a três semanas.
 
 ---
 
+## 2026-08-05 — a suíte de avaliação, e um bug que ela expôs no orquestrador
+
+**Feito:** a suíte de avaliação da ADR 0007, em `src/avaliacao/`, mais o script
+`scripts/avaliar.ts`. Doze casos cobrindo o que o `plano.md` §6.2 lista: caminho
+feliz, ambiguidade de data, correção no meio, dia fechado, antecedência mínima, fora
+de escopo, desistência, tentativa de agendar duas vezes, telefone inválido.
+
+- `tipos.ts` — caso, expectativa e o formato de gravação.
+- `gravacao.ts` — `ModeloGravado` (camada 1) e `ModeloGravador` (camada 2), mais a
+  assinatura que invalida gravação velha.
+- `executor.ts` — roda um caso contra o duplo em memória, com relógio congelado.
+- `casos.ts` — o catálogo.
+
+Cada caso afirma **o que o agente fez** — qual ferramenta, com quais argumentos, e
+quantos agendamentos existem no fim — nunca o texto que ele produziu. Um caso que
+afirmasse texto quebraria na primeira vez que o modelo trocasse uma palavra.
+
+**O relógio congelado não é conveniência, é requisito**, e por dois motivos que só
+apareceram ao escrever: "quinta que vem" precisa resolver para a mesma data em toda
+execução, e o prompt de sistema carrega a data de hoje — com o relógio solto, a
+assinatura da gravação mudaria à meia-noite e toda gravação seria considerada
+desatualizada no dia seguinte. Um teste existe só para fixar essa propriedade.
+
+**Não funcionou — e o achado vale mais que o código:**
+
+- O orquestrador degradava em **qualquer** exceção do modelo. Parecia certo: falha do
+  provedor não pode derrubar a ligação (§6.5). Mas isso engolia também a
+  `GravacaoDesatualizada` da suite — uma gravação velha virava "turno degradado" em
+  vez de falha, e um caso que espera zero agendamentos **passaria** reproduzindo um
+  diálogo que o modelo não produz mais. É exatamente o verde silencioso que a ADR
+  0007 foi escrita para impedir, e a implementação da própria ADR o reintroduziu por
+  outra porta. Corrigido: degrada só em `ErroModelo`; qualquer outra exceção sobe.
+  Dois testes da suíte de avaliação pegaram isso, e um teste novo no orquestrador
+  agora fixa a fronteira.
+- A primeira versão do caso `telefone-invalido` afirmava a string exata do telefone
+  que o modelo repassaria. Frágil: mandar com máscara ou só dígitos são as duas
+  formas certas, porque a normalização é do agente. Passou a afirmar o estado final.
+
+**Medido:** 74 casos de teste de unidade, todos passando; `tsc --noEmit` limpo. A
+suíte de avaliação reprova 12 de 12 por gravação ausente, com código de saída 1 — que
+é o comportamento correto enquanto não houver gravação.
+
+**Aberto:**
+
+1. **Gravar os doze casos** (`npm run avaliar -- --ao-vivo`). Precisa da chave da
+   Anthropic. É a primeira coisa a fazer quando ela existir, e produz de uma vez o
+   custo por conversa medido e a taxa de aprovação publicável.
+2. Ligar a camada 1 no CI. Sem chave e sem rede, é só mais um passo do workflow.
+3. Refazer a medição de latência das ferramentas com amostragem maior — pendência de
+   duas sessões atrás, ainda aberta. Depende de subir o AgendaFácil local de novo.
+
 ## 2026-08-04 — o loop do agente, e o orçamento como restrição de arquitetura
 
 **Feito:** a camada de conversa inteira, em `src/conversa/` — o loop que o
